@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="dxx <dxx@march7.com.cn>">
+    <meta name="copyright" content="© dxx">
+    <meta name="description" content="一个本地处理图片水印的小工具">
+    <title>水印助手 Plus</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #ffffff;
+        }
+
+        @media screen and (max-width: 768px) {
+            /* 在小屏幕（例如手机）上应用以下样式 */
+            .container {
+                width: 80%; /* 80%宽度 */
+            }
+        }
+
+        @media screen and (min-width: 769px) {
+            /* 在大屏幕（例如电脑）上应用以下样式 */
+            .container {
+                width: 30%; /* 40%宽度 */
+            }
+        }
+
+        .container {
+            background-color: #ffffff;
+            border-radius: 0px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+            font-family: Arial, sans-serif;
+            font-size: 14px; /* 设置字体大小为 12 像素 */
+        }
+
+        /* 分割线样式 */
+        hr {
+            border: none;
+            border-top: 0.8px solid #ccc; /* 边框颜色淡一些 */
+            opacity: 0.3; /* 透明度淡一些 */
+            margin: 10px 0;
+        }
+
+        a {
+            text-decoration: none; /* 去掉默认下划线 */
+            color: #888; /* 设置链接文本颜色为灰色 */
+            border-bottom: 1px solid #888; /* 添加底部边框作为下划线效果，并与文本保留一道缝隙 */
+            padding-bottom: 1px; /* 增加底部内边距来调整缝隙的大小 */
+        }
+
+        /* 底部版权信息样式 */
+        footer {
+            text-align: center;
+            color: #d4d4d4;
+            margin-top: 20px;
+            width: 100%;
+
+            bottom: 0;
+            font-size: 12px; /* 设置字体大小为 12 像素 */
+            font-family: Arial, sans-serif;
+            line-height: 1.8; /* 设置行高为 1.1 倍 */
+        }
+
+
+        canvas {
+            width: 100%;
+            height: 0;
+        }
+
+  
+        h2 {
+        text-align: center; /* 设置 h2 标题文本居中对齐 */
+        }
+
+</style>
+
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>水印助手</h2><hr>
+    <!-- 插入水印功能元素 -->
+    <canvas></canvas>
+<div>
+    <input id="upload-input" type="file" accept="image/*">
+    <br><br><br><label>
+        水印文字：
+        <input id="content" type="text" value="仅供XX实名认证使用">
+    </label>
+    <br><br><label>
+        水印颜色：
+        <input id="color" type="color" value="#ffffff">
+    </label>
+    <br><br><label>
+        不透明度：
+        <input id="alpha" type="range" min="10" max="100" value="50">
+    </label>
+    <br><br><label>
+        水印大小比：
+        <input id="size" type="range" min="1" max="10" value="5">
+    </label>
+    <br><br><label>
+        水印间隔比：
+        <input id="gap" type="range" min="20" max="400" value="150">
+    </label>
+    <br><br><label>
+        水印字体：
+        <input id="font" type="text"  value="sans-serif">
+    </label>
+    <br><br><br><br><a href="javascript:alert('请先打开一张图片')" download>保存图片</a><br><br>
+
+<footer>
+    © <a href="https://www.dxxblog.cn">dxxblog.cn</a> 2023｜一个全屏水印小工具，严禁商用
+    <br><br>
+</footer>
+</div>
+
+<script>
+    var img = null;
+    document.addEventListener('change', function (ev) {
+        if (ev.target.type === 'file') {
+            if (!ev.target.files.length) return;
+            var file = ev.target.files[0];
+            createBitmap(file, function (result) {
+                img = result;
+                repaint()
+            });
+            var newName = file.name.split('.');
+            newName.splice(-1, 0, 'watermarked');
+            document.getElementsByTagName('a')[0].download = newName.join('.');
+        } else {
+            repaint()
+        }
+    });
+
+    function repaint() {
+        if (!img) return;
+        var ctx = document.getElementsByTagName('canvas')[0].getContext('2d');
+        ctx.canvas.width = img.width;
+        ctx.canvas.height = img.height;
+        var maxSize = Math.max(img.height, img.width);
+        ctx.canvas.style.height = (img.height / img.width) * 100 + '%';
+        ctx.restore();
+        ctx.drawImage(img, 0, 0);
+        ctx.fillStyle = document.getElementById('color').value;
+        ctx.globalAlpha = document.getElementById('alpha').value / 100;
+        var size = (document.getElementById('size').value * maxSize / 100);
+        ctx.font = size + 'px "' + document.getElementById('font').value + '"';
+        ctx.textBaseline = 'middle';
+        ctx.rotate(-45 * Math.PI / 180);
+        var gap = size * document.getElementById('gap').value / 100;
+        var content = document.getElementById('content').value;
+        if (!content.length) return;
+        var limit = Math.sqrt(2*(maxSize*maxSize));
+        var breaker = ctx.measureText(content).width;
+        for (var h = -maxSize, even = false; h <= limit; h += size + gap, even = !even){
+            for (var v = -maxSize-(even?breaker/2:0); v<=limit+(even?breaker/2:0); v += breaker + size){
+                ctx.fillText(content, v, h);
+            }
+        }
+        document.getElementsByTagName('a')[0].href = ctx.canvas.toDataURL()
+    }
+    function createBitmap(blob, callback) {
+        var img = document.createElement('img');
+        img.addEventListener('load', function () {
+            callback(this);
+        });
+        img.src = URL.createObjectURL(blob);
+    }
+</script>
+</div>
+
+</body>
+</html>
