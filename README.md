@@ -7,5 +7,6 @@
 # 介绍
 在本地即可为图片添加全屏水印
 
-# 使用方法
-请参考 https://www.dxxblog.cn/775.html
+# 使用
+在线体验：https://public.dxxblog.cn/tools/watermark
+其他信息请参考 https://www.dxxblog.cn/775.html
