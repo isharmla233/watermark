@@ -10,6 +10,6 @@
 
 
 # 使用
-在线体验：[https://public.dxxblog.cn/tools/watermark](https://www.baiyuyu.com/tool/watermark/)
+在线体验：[https://www.baiyuyu.com/tool/watermark/](https://www.baiyuyu.com/tool/watermark/)
 
 其他信息请参考 https://www.baiyuyu.com/775.html
